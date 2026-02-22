@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HRHire — HR Assessment Simulation</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --ink: #0D0D0D; --dark: #141414; --panel: #1C1C1C; --card: #222222;
+  --border: #333333; --border2: #2A2A2A; --ochre: #E8952A; --gold: #F5C842;
+  --sage: #3DAA6A; --red: #E03535; --cream: #F0E6D3; --muted: #888; --text: #E8E0D4;
+  --comp: #3B82F6;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Outfit', sans-serif; background: var(--ink); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+/* ═══ ONBOARDING SCREEN ═══ */
+#onboarding {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: var(--ink); padding: 2rem;
+}
+.ob-card {
+  background: var(--dark); border: 1px solid var(--border); border-radius: 10px;
+  padding: 3rem 2.5rem; max-width: 560px; width: 100%;
+}
+.ob-logo { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 0.08em; color: var(--ochre); margin-bottom: 0.2rem; }
+.ob-logo span { color: var(--cream); }
+.ob-sub { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; font-family: 'DM Mono', monospace; margin-bottom: 2rem; }
+.ob-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 0.08em; color: var(--text); margin-bottom: 1.5rem; }
+.ob-field { margin-bottom: 1.2rem; }
+.ob-label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+.ob-input {
+  width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 5px;
+  color: var(--text); font-family: 'Outfit', sans-serif; font-size: 0.95rem; padding: 0.7rem 1rem;
+  outline: none; transition: border-color 0.15s;
+}
+.ob-input:focus { border-color: var(--ochre); }
+.ob-select { width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 0.88rem; padding: 0.7rem 1rem; outline: none; cursor: pointer; }
+.ob-select option { background: var(--panel); }
+.ob-divider { height: 1px; background: var(--border2); margin: 1.5rem 0; }
+.ob-info { font-size: 0.78rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; }
+.ob-info strong { color: var(--text); }
+
+/* ═══ HEADER ═══ */
+header { background: var(--dark); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+.header-top { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.5rem; flex-wrap: wrap; gap: 0.8rem; }
+.logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.08em; color: var(--ochre); line-height: 1; }
+.logo span { color: var(--cream); }
+.candidate-badge { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 0.3rem 0.8rem; font-size: 0.72rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+.candidate-badge strong { color: var(--ochre); }
+.header-stats { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
+.hstat { display: flex; flex-direction: column; align-items: flex-end; }
+.hstat-label { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-family: 'DM Mono', monospace; }
+.hstat-val { font-family: 'DM Mono', monospace; font-size: 0.84rem; font-weight: 500; color: var(--cream); }
+.hstat-val.up { color: var(--sage); } .hstat-val.down { color: var(--red); } .hstat-val.warn { color: var(--gold); }
+.phase-banner { background: var(--ochre); color: var(--ink); text-align: center; padding: 0.35rem; font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem; letter-spacing: 0.2em; display: none; }
+
+/* TICKER */
+.ticker-wrap { overflow: hidden; background: var(--ink); border-top: 1px solid var(--border2); padding: 0.3rem 0; }
+.ticker-inner { display: flex; gap: 3rem; animation: ticker 35s linear infinite; white-space: nowrap; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.ticker-item { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); display: inline-flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
+.ticker-item .up { color: var(--sage); } .ticker-item .down { color: var(--red); }
+
+/* ═══ BRANCHES BAR ═══ */
+.branches-bar { display: flex; gap: 0; border-bottom: 1px solid var(--border); overflow-x: auto; background: var(--dark); }
+.branch-tab { padding: 0.65rem 1.2rem; font-size: 0.78rem; font-weight: 600; cursor: pointer; border-right: 1px solid var(--border); white-space: nowrap; color: var(--muted); transition: all 0.15s; display: flex; align-items: center; gap: 0.4rem; position: relative; user-select: none; }
+.branch-tab:hover { background: var(--panel); color: var(--text); }
+.branch-tab.active { color: var(--ochre); background: var(--panel); }
+.branch-tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--ochre); }
+.branch-tab .btag { font-size: 0.58rem; background: var(--border); padding: 0.1rem 0.35rem; border-radius: 2px; font-family: 'DM Mono', monospace; }
+.branch-tab.locked { opacity: 0.4; cursor: not-allowed; }
+.branch-tab.locked:hover { background: transparent; }
+
+/* ═══ LAYOUT ═══ */
+main { display: grid; grid-template-columns: 1fr 360px; min-height: calc(100vh - 130px); }
+@media(max-width: 900px) { main { grid-template-columns: 1fr; } .sidebar { border-left: none; border-top: 1px solid var(--border); } }
+.workspace { padding: 1.3rem; overflow-y: auto; }
+.sidebar { border-left: 1px solid var(--border); background: var(--dark); overflow-y: auto; padding: 1.3rem; }
+
+/* ═══ CARDS ═══ */
+.card { background: var(--card); border: 1px solid var(--border2); border-radius: 6px; padding: 1.1rem; margin-bottom: 1.1rem; }
+.card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.9rem; }
+.card-title { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); font-family: 'DM Mono', monospace; }
+.card-title.accent { color: var(--ochre); }
+
+/* ═══ METRICS ═══ */
+.metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; margin-bottom: 1.1rem; }
+@media(max-width:600px) { .metrics-row { grid-template-columns: 1fr 1fr; } }
+.metric { background: var(--panel); border: 1px solid var(--border2); border-radius: 4px; padding: 0.8rem; }
+.m-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 0.3rem; }
+.m-value { font-family: 'DM Mono', monospace; font-size: 1rem; font-weight: 500; color: var(--cream); }
+.m-value.up { color: var(--sage); } .m-value.down { color: var(--red); } .m-value.warn { color: var(--gold); }
+
+/* ═══ FORMS ═══ */
+.field { margin-bottom: 0.9rem; }
+label { display: flex; align-items: center; gap: 0.4rem; font-size: 0.76rem; font-weight: 600; color: var(--text); margin-bottom: 0.35rem; }
+.hint { font-size: 0.68rem; color: var(--muted); margin-bottom: 0.35rem; line-height: 1.5; }
+input[type=range] { width: 100%; accent-color: var(--ochre); cursor: pointer; }
+select { width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 0.82rem; padding: 0.5rem 0.75rem; outline: none; cursor: pointer; transition: border-color 0.15s; }
+select:focus { border-color: var(--ochre); }
+select option { background: var(--panel); }
+textarea { width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 0.82rem; padding: 0.6rem 0.8rem; outline: none; resize: vertical; min-height: 70px; transition: border-color 0.15s; line-height: 1.5; }
+textarea:focus { border-color: var(--ochre); }
+textarea::placeholder { color: var(--muted); }
+.range-row { display: flex; justify-content: space-between; align-items: center; margin-top: 0.3rem; }
+.range-min, .range-max { font-size: 0.62rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+.range-cur { font-family: 'DM Mono', monospace; font-size: 0.9rem; font-weight: 500; color: var(--ochre); }
+
+/* ═══ COMPETITOR WIDGET ═══ */
+.competitor-card {
+  background: var(--panel); border: 1px solid rgba(224,53,53,0.4); border-radius: 5px;
+  padding: 0.9rem 1rem; margin-bottom: 1rem; position: relative; overflow: hidden;
+}
+.competitor-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--red); }
+.comp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+.comp-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--red); font-family: 'DM Mono', monospace; }
+.comp-stats { display: flex; gap: 1.5rem; font-size: 0.72rem; }
+.comp-stat { display: flex; flex-direction: column; }
+.comp-stat-label { font-size: 0.6rem; color: var(--muted); margin-bottom: 0.1rem; }
+.comp-stat-val { font-family: 'DM Mono', monospace; color: var(--text); font-weight: 500; }
+.comp-action { font-size: 0.75rem; color: var(--red); margin-top: 0.5rem; line-height: 1.5; }
+
+/* ═══ LOAN PANEL ═══ */
+.loan-card { background: var(--panel); border: 1px solid rgba(61,130,246,0.4); border-radius: 5px; padding: 0.9rem 1rem; margin-bottom: 1rem; }
+.loan-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--comp); font-family: 'DM Mono', monospace; margin-bottom: 0.5rem; }
+.loan-stats { display: flex; gap: 1.5rem; font-size: 0.72rem; margin-bottom: 0.5rem; }
+.loan-stat { display: flex; flex-direction: column; }
+.loan-stat-label { font-size: 0.6rem; color: var(--muted); margin-bottom: 0.1rem; }
+.loan-stat-val { font-family: 'DM Mono', monospace; color: var(--comp); font-weight: 500; }
+.loan-warning { font-size: 0.7rem; color: var(--gold); margin-top: 0.4rem; }
+
+/* ═══ HIDDEN EVENT REVEAL ═══ */
+.hidden-event-banner {
+  background: rgba(245,200,66,0.08); border: 1px dashed var(--gold); border-radius: 5px;
+  padding: 0.8rem 1rem; margin-bottom: 1rem; font-size: 0.78rem; color: var(--gold);
+  display: flex; align-items: center; gap: 0.6rem;
+}
+
+/* ═══ EVENT CARD ═══ */
+.event-card { background: var(--panel); border: 1px solid var(--gold); border-radius: 5px; padding: 0.9rem 1rem; margin-bottom: 1rem; position: relative; overflow: hidden; }
+.event-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--gold); }
+.event-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--gold); font-family: 'DM Mono', monospace; margin-bottom: 0.35rem; }
+.event-text { font-size: 0.8rem; line-height: 1.6; color: var(--text); }
+.event-card.danger { border-color: var(--red); } .event-card.danger::before { background: var(--red); } .event-card.danger .event-label { color: var(--red); }
+.event-card.revealed { border-color: var(--sage); } .event-card.revealed::before { background: var(--sage); }
+
+/* ═══ DILEMMA ═══ */
+.dilemma-card { background: var(--panel); border: 1px solid var(--red); border-radius: 5px; padding: 1rem 1.1rem; margin-bottom: 1rem; }
+.dilemma-title { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 0.1em; color: var(--red); margin-bottom: 0.4rem; }
+.dilemma-text { font-size: 0.78rem; line-height: 1.6; color: var(--text); margin-bottom: 0.75rem; }
+.dilemma-options { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.dilemma-opt { flex: 1; min-width: 130px; background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 0.55rem 0.75rem; font-size: 0.73rem; cursor: pointer; transition: all 0.15s; line-height: 1.5; text-align: left; }
+.dilemma-opt:hover { border-color: var(--ochre); }
+.dilemma-opt.chosen { border-color: var(--ochre); background: rgba(232,149,42,0.08); }
+.dilemma-opt-label { font-weight: 700; color: var(--ochre); font-size: 0.68rem; display: block; margin-bottom: 0.2rem; }
+
+/* ═══ JOURNAL ═══ */
+.journal-card { background: var(--panel); border: 1px solid rgba(61,170,106,0.3); border-radius: 5px; padding: 0.9rem 1rem; margin-bottom: 1rem; }
+.journal-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--sage); font-family: 'DM Mono', monospace; margin-bottom: 0.4rem; }
+.journal-prompt { font-size: 0.78rem; color: var(--text); margin-bottom: 0.6rem; line-height: 1.5; }
+
+/* ═══ BUTTONS ═══ */
+.btn { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.6rem 1.1rem; border: none; border-radius: 4px; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em; }
+.btn-primary { background: var(--ochre); color: var(--ink); } .btn-primary:hover { background: #F5A030; }
+.btn-danger { background: var(--red); color: white; } .btn-danger:hover { background: #C82020; }
+.btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); } .btn-ghost:hover { border-color: var(--ochre); color: var(--ochre); }
+.btn-blue { background: var(--comp); color: white; } .btn-blue:hover { background: #2563EB; }
+.btn-success { background: var(--sage); color: white; }
+.btn:disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+.btn-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
+
+/* ═══ EMPLOYEE ═══ */
+.emp-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 0.9rem; }
+.emp-btn-group { background: var(--panel); border: 1px solid var(--border2); border-radius: 4px; padding: 0.75rem; }
+.emp-btn-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 0.4rem; }
+.stepper { display: flex; align-items: center; gap: 0.5rem; }
+.step-btn { width: 26px; height: 26px; border: 1px solid var(--border); background: var(--card); color: var(--text); border-radius: 3px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s; user-select: none; line-height: 1; }
+.step-btn:hover { background: var(--ochre); border-color: var(--ochre); color: var(--ink); }
+.step-btn.danger:hover { background: var(--red); border-color: var(--red); }
+.step-val { font-family: 'DM Mono', monospace; font-size: 1.05rem; font-weight: 500; color: var(--cream); min-width: 22px; text-align: center; }
+.emp-cost-preview { font-size: 0.67rem; color: var(--muted); margin-top: 0.25rem; font-family: 'DM Mono', monospace; }
+.roster { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; margin-top: 0.7rem; }
+.emp-card { background: var(--panel); border: 1px solid var(--border2); border-radius: 4px; padding: 0.5rem 0.65rem; display: flex; align-items: center; gap: 0.45rem; font-size: 0.72rem; transition: all 0.2s; }
+.emp-card.new-hire { border-color: var(--sage); animation: slideIn 0.3s ease; }
+@keyframes slideIn { from { transform: translateX(-8px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.emp-avatar { font-size: 1.1rem; }
+.emp-name { font-weight: 600; color: var(--text); line-height: 1.2; }
+.emp-role { font-size: 0.62rem; color: var(--muted); }
+.emp-morale-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-left: auto; }
+
+/* ═══ CHARTS ═══ */
+.chart-wrap { position: relative; height: 100px; }
+canvas { display: block; }
+
+/* RADAR */
+#radarWrap { display: flex; justify-content: center; margin-top: 0.5rem; }
+
+/* ═══ NOTIFICATIONS ═══ */
+#notifStack { position: fixed; bottom: 1.2rem; right: 1.2rem; z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; max-width: 320px; }
+.notif { background: var(--panel); border: 1px solid var(--border); border-radius: 5px; padding: 0.7rem 0.9rem; font-size: 0.78rem; line-height: 1.5; animation: notifIn 0.3s ease; border-left: 3px solid var(--ochre); }
+.notif.danger { border-left-color: var(--red); } .notif.success { border-left-color: var(--sage); } .notif.warn { border-left-color: var(--gold); }
+@keyframes notifIn { from { transform: translateX(16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* ═══ HISTORY ═══ */
+.hist-item { background: var(--panel); border-radius: 4px; padding: 0.6rem 0.8rem; margin-bottom: 0.45rem; font-size: 0.75rem; line-height: 1.6; border-left: 3px solid var(--border); }
+.hist-item.profit { border-left-color: var(--sage); } .hist-item.loss { border-left-color: var(--red); }
+.hist-q { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.15rem; }
+.hist-journal { font-size: 0.7rem; color: var(--muted); font-style: italic; margin-top: 0.2rem; border-top: 1px solid var(--border2); padding-top: 0.2rem; }
+
+/* ═══ COMPETENCY BARS ═══ */
+.comp-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.55rem; }
+.comp-name { font-size: 0.7rem; width: 130px; flex-shrink: 0; color: var(--text); }
+.comp-track { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.comp-fill { height: 100%; background: var(--ochre); border-radius: 3px; transition: width 0.6s ease; }
+.comp-score { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--ochre); width: 26px; text-align: right; }
+
+/* ═══ MODAL ═══ */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 100; align-items: center; justify-content: center; padding: 1.5rem; }
+.overlay.show { display: flex; }
+.modal { background: var(--dark); border: 1px solid var(--border); border-radius: 8px; padding: 2rem 2.2rem; max-width: 600px; width: 100%; text-align: center; animation: popIn 0.35s cubic-bezier(0.34,1.4,0.64,1); max-height: 92vh; overflow-y: auto; }
+@keyframes popIn { from { transform: scale(0.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-icon { font-size: 3rem; margin-bottom: 0.6rem; }
+.modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 0.05em; color: var(--ochre); margin-bottom: 0.4rem; }
+.modal-sub { font-size: 0.84rem; color: var(--muted); margin-bottom: 1.2rem; line-height: 1.6; }
+.modal-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-bottom: 1.2rem; }
+.mstat { background: var(--panel); border-radius: 4px; padding: 0.65rem; }
+.mstat-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 0.2rem; }
+.mstat-val { font-family: 'DM Mono', monospace; font-size: 0.95rem; font-weight: 500; color: var(--cream); }
+.score-display { display: inline-block; background: var(--ochre); color: var(--ink); font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; padding: 0.25rem 1rem; border-radius: 4px; margin: 0.4rem 0 1.2rem; letter-spacing: 0.1em; }
+.hr-note { background: var(--panel); border: 1px solid var(--border2); border-radius: 4px; padding: 0.9rem; text-align: left; font-size: 0.78rem; line-height: 1.7; color: var(--text); margin-bottom: 1.2rem; }
+.journal-report { background: var(--ink); border: 1px solid var(--border); border-radius: 4px; padding: 0.9rem; text-align: left; font-size: 0.75rem; line-height: 1.7; color: var(--muted); margin-bottom: 1rem; max-height: 180px; overflow-y: auto; }
+.journal-report h4 { font-size: 0.68rem; color: var(--gold); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; font-family: 'DM Mono', monospace; }
+.journal-entry { border-bottom: 1px solid var(--border2); padding-bottom: 0.4rem; margin-bottom: 0.4rem; }
+.journal-entry-q { color: var(--ochre); font-weight: 600; font-size: 0.7rem; }
+
+/* ═══ WARN BANNER ═══ */
+.warn-banner { background: rgba(224,53,53,0.1); border: 1px solid rgba(224,53,53,0.3); border-radius: 4px; padding: 0.6rem 0.9rem; font-size: 0.76rem; color: var(--red); margin-bottom: 0.9rem; display: none; line-height: 1.5; }
+.warn-banner.show { display: block; }
+
+/* ═══ BRANCH STATUS ═══ */
+.branch-status { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.62rem; font-family: 'DM Mono', monospace; padding: 0.18rem 0.45rem; border-radius: 2px; font-weight: 500; }
+.bs-good { background: rgba(61,170,106,0.15); color: var(--sage); border: 1px solid rgba(61,170,106,0.3); }
+.bs-warn { background: rgba(245,200,66,0.15); color: var(--gold); border: 1px solid rgba(245,200,66,0.3); }
+.bs-bad { background: rgba(224,53,53,0.15); color: var(--red); border: 1px solid rgba(224,53,53,0.3); }
+
+.branch-overview { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.7rem; margin-bottom: 1.1rem; }
+.bov-card { background: var(--panel); border: 1px solid var(--border2); border-radius: 5px; padding: 0.85rem; cursor: pointer; transition: all 0.15s; }
+.bov-card:hover { border-color: var(--ochre); }
+.bov-name { font-weight: 700; font-size: 0.82rem; margin-bottom: 0.15rem; display: flex; align-items: center; justify-content: space-between; }
+.bov-loc { font-size: 0.65rem; color: var(--muted); margin-bottom: 0.55rem; }
+.bov-stats { font-family: 'DM Mono', monospace; font-size: 0.67rem; color: var(--text); line-height: 1.8; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--dark); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  ONBOARDING SCREEN                      -->
+<!-- ═══════════════════════════════════════ -->
+<div id="onboarding">
+  <div class="ob-card">
+    <div class="ob-logo">HRHire<span>SIM</span></div>
+    <div class="ob-sub">HR Business Simulation · Market Series</div>
+    <div class="ob-title">CANDIDATE REGISTRATION</div>
+
+    <div class="ob-field">
+      <label class="ob-label">Full Name *</label>
+      <input class="ob-input" type="text" id="obName" placeholder="e.g. Jane Kamau" maxlength="60"/>
+    </div>
+    <div class="ob-field">
+      <label class="ob-label">Role Applying For *</label>
+      <input class="ob-input" type="text" id="obRole" placeholder="e.g. Branch Manager, Operations Lead" maxlength="60"/>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+      <div class="ob-field">
+        <label class="ob-label">Years of Experience</label>
+        <select class="ob-select" id="obExp">
+          <option value="0">0 – 1 year</option>
+          <option value="1">2 – 3 years</option>
+          <option value="2">4 – 6 years</option>
+          <option value="3">7 + years</option>
+        </select>
+      </div>
+      <div class="ob-field">
+        <label class="ob-label">Business Background</label>
+        <select class="ob-select" id="obBg">
+          <option value="none">No business background</option>
+          <option value="some">Some business exposure</option>
+          <option value="strong">Strong business background</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="ob-divider"></div>
+    <div class="ob-info">
+      <strong>How this works:</strong> You will manage a Nairobi market business across 3 branches over ~10 quarters. Each quarter you make financial, staffing, and strategic decisions. <strong>Events are hidden until after you decide</strong> — just like real business. At the end, a full HR scorecard is generated for the interviewer.
+      <br><br>⚠️ <strong>Harder mode active:</strong> Cash crises are real, loans carry interest, and a competitor AI will react to your moves.
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:0.85rem;" onclick="startSim()">▶ Start Simulation</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  MAIN SIM (hidden until start)          -->
+<!-- ═══════════════════════════════════════ -->
+<div id="simApp" style="display:none;">
+
+<div id="notifStack"></div>
+
+<header>
+  <div class="header-top">
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <div>
+        <div class="logo">HRHire<span>SIM</span></div>
+      </div>
+      <div class="candidate-badge" id="candidateBadge">Candidate: —</div>
+    </div>
+    <div class="header-stats">
+      <div class="hstat"><div class="hstat-label">Cash</div><div class="hstat-val" id="hCash">KES 50,000</div></div>
+      <div class="hstat"><div class="hstat-label">Debt</div><div class="hstat-val warn" id="hDebt">—</div></div>
+      <div class="hstat"><div class="hstat-label">Phase</div><div class="hstat-val warn" id="hPhase">Branch 1</div></div>
+      <div class="hstat"><div class="hstat-label">Quarter</div><div class="hstat-val" id="hQuarter">Q1</div></div>
+      <div class="hstat"><div class="hstat-label">Staff</div><div class="hstat-val" id="hStaff">4</div></div>
+      <div class="hstat"><div class="hstat-label">Net P/L</div><div class="hstat-val" id="hProfit">—</div></div>
+    </div>
+  </div>
+  <div id="phaseBanner" class="phase-banner"></div>
+  <div class="ticker-wrap">
+    <div class="ticker-inner" id="ticker">
+      <span class="ticker-item">USD/KES <span class="down">▼ 129.4</span></span>
+      <span class="ticker-item">Fuel <span class="up">▲ KES 212/L</span></span>
+      <span class="ticker-item">Market Index <span class="up">▲ 3.2%</span></span>
+      <span class="ticker-item">CPI Inflation <span class="down">7.8% YoY</span></span>
+      <span class="ticker-item">Westlands Footfall <span class="up">▲ 12%</span></span>
+      <span class="ticker-item">Supply Chain <span class="down">▼ Delays likely</span></span>
+      <span class="ticker-item">CBD Protests <span class="down">▼ Routes disrupted</span></span>
+      <span class="ticker-item">Tourist Arrivals <span class="up">▲ +18%</span></span>
+      <span class="ticker-item">KCB Loan Rate <span class="down">14.5% p.a.</span></span>
+      <span class="ticker-item">M-Pesa Transactions <span class="up">▲ Record high</span></span>
+      <!-- duplicate for seamless loop -->
+      <span class="ticker-item">USD/KES <span class="down">▼ 129.4</span></span>
+      <span class="ticker-item">Fuel <span class="up">▲ KES 212/L</span></span>
+      <span class="ticker-item">Market Index <span class="up">▲ 3.2%</span></span>
+      <span class="ticker-item">CPI Inflation <span class="down">7.8% YoY</span></span>
+      <span class="ticker-item">Westlands Footfall <span class="up">▲ 12%</span></span>
+      <span class="ticker-item">Supply Chain <span class="down">▼ Delays likely</span></span>
+      <span class="ticker-item">CBD Protests <span class="down">▼ Routes disrupted</span></span>
+      <span class="ticker-item">Tourist Arrivals <span class="up">▲ +18%</span></span>
+      <span class="ticker-item">KCB Loan Rate <span class="down">14.5% p.a.</span></span>
+      <span class="ticker-item">M-Pesa Transactions <span class="up">▲ Record high</span></span>
+    </div>
+  </div>
+</header>
+
+<div class="branches-bar" id="branchTabs">
+  <div class="branch-tab active" id="btab0">🏪 Main <span class="btag">B1</span></div>
+  <div class="branch-tab locked" id="btab1">🔒 Branch 2 <span class="btag">LOCKED</span></div>
+  <div class="branch-tab locked" id="btab2">🔒 Branch 3 <span class="btag">LOCKED</span></div>
+  <div class="branch-tab" id="btabAll" style="margin-left:auto;">📊 Empire View</div>
+</div>
+
+<main>
+  <div class="workspace" id="workspace"></div>
+  <div class="sidebar">
+    <div class="card-title accent" style="margin-bottom:0.8rem;">📊 Live Performance</div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">PROFIT TREND</div></div>
+      <div class="chart-wrap"><canvas id="profitChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">QUARTER LOG</div></div>
+      <div id="historyList" style="font-size:0.75rem;color:var(--muted);">No quarters run yet.</div>
+    </div>
+    <div class="card" id="hrCard" style="display:none">
+      <div class="card-head"><div class="card-title">🎯 HR COMPETENCIES</div></div>
+      <div id="compBars"></div>
+      <div id="radarWrap"><canvas id="radarChart" width="200" height="200"></canvas></div>
+    </div>
+  </div>
+</main>
+
+</div><!-- end simApp -->
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-icon" id="mIcon"></div>
+    <div class="modal-title" id="mTitle"></div>
+    <div class="modal-sub" id="mSub"></div>
+    <div class="modal-stats" id="mStats"></div>
+    <div class="score-display" id="mScore" style="display:none"></div>
+    <div class="hr-note" id="mHRNote"></div>
+    <div class="journal-report" id="mJournal" style="display:none"></div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn btn-primary" id="mBtn" onclick="modalAction()">Continue</button>
+      <button class="btn btn-ghost" onclick="resetAll()">↺ Restart</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!--  JAVASCRIPT                             -->
+<!-- ═══════════════════════════════════════ -->
+<script>
+// ══════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════
+const INITIAL_CASH = 50000;
+const BRANCH_UNLOCK_COST = [0, 25000, 55000];
+const BRANCH_LOCATIONS = [
+  { name: 'Gikomba',   emoji: '🏪', desc: 'High-volume second-hand market. Competitive but busy.' },
+  { name: 'Westlands', emoji: '🏬', desc: 'Upscale clientele. Premium pricing works well here.' },
+  { name: 'CBD Moi Ave', emoji: '🏙️', desc: 'Central location. Heavy foot traffic, intense competition.' },
+];
+const SALARY_PER_EMP = 8000;
+const HIRE_COST = 3000;
+const LOAN_AMOUNTS = [10000, 20000, 35000];
+const LOAN_INTEREST = 0.05; // 5% per quarter
+const PHASE_QUARTERS = [4, 3, 3];
+
+const EMPLOYEE_ROLES = ['Sales Rep','Cashier','Stock Clerk','Supervisor','Marketing Asst','Guard','Driver','Cleaner'];
+const EMPLOYEE_AVATARS = ['👨🏾','👩🏿','👨🏿','👩🏾','👦🏾','👧🏿','🧑🏾','👨🏽','👩🏽','🧑🏿'];
+const EMPLOYEE_NAMES = ['Amina','Brian','Cynthia','David','Esther','Felix','Grace','Hassan','Irene','Juma','Kamau','Linda','Moses','Nancy','Owen','Purity','Rashid','Stella','Thomas','Uwi','Vivian','Wilson'];
+
+// Events — HIDDEN until quarter runs (no text shown beforehand)
+const EVENTS = [
+  { text: '🌧️ Heavy rains — foot traffic dropped 22% this quarter.', mod: 0.78, moraleDelta: -5, type: 'warn' },
+  { text: '🎪 Nairobi Trade Fair nearby — shoppers surged 32%. Great timing!', mod: 1.32, moraleDelta: 8, type: 'good' },
+  { text: '🏗️ Road works blocked main access — revenue hit 18%.', mod: 0.82, moraleDelta: -6, type: 'warn' },
+  { text: '📱 A customer post went viral on TikTok! Brand surged.', mod: 1.22, moraleDelta: 10, type: 'good' },
+  { text: '💸 Supplier raised wholesale prices 18% — margins squeezed.', mod: 0.88, moraleDelta: -3, type: 'warn' },
+  { text: '🆕 New rival opened nearby and undercut your prices aggressively.', mod: 0.8, moraleDelta: -5, type: 'danger' },
+  { text: '🛒 School holidays — bulk buying surge from families.', mod: 1.18, moraleDelta: 6, type: 'good' },
+  { text: '⚡ Power outage mid-quarter — disrupted 4 trading days.', mod: 0.85, moraleDelta: -7, type: 'danger' },
+  { text: '🤝 Market Association joint promotion — mild demand boost.', mod: 1.1, moraleDelta: 4, type: 'good' },
+  { text: '☀️ Steady market conditions this quarter. No surprises.', mod: 1.0, moraleDelta: 0, type: '' },
+  { text: '📦 Bulk deal from supplier — lower cost of goods this quarter.', mod: 1.13, moraleDelta: 3, type: 'good' },
+  { text: '💰 KRA spot audit — operations slowed for 10 days.', mod: 0.91, moraleDelta: -6, type: 'danger' },
+  { text: '🔥 Fire at neighbouring stall — smoke disrupted your shop for 3 days.', mod: 0.87, moraleDelta: -8, type: 'danger' },
+  { text: '🎁 Festive season early rush — Christmas shoppers are out!', mod: 1.28, moraleDelta: 7, type: 'good' },
+];
+
+const DILEMMAS = [
+  { title: '⚠️ DILEMMA: Staff Poaching', text: 'A rival business is offering your best supervisor a 30% pay rise. How do you respond?',
+    options: [
+      { label: 'Match the offer', desc: '+KES 2,000/qtr salary. Retain talent & morale boost.', effect: { cashMod: -2000, moraleDelta: 12, brandDelta: 4 } },
+      { label: 'Let them go', desc: 'Save money. Lose experience. Team productivity drops.', effect: { moraleDelta: -16, revenueMod: 0.88 } },
+      { label: 'Counter with perks', desc: 'Flexible hours + training. Uncertain result, low cost.', effect: { cashMod: -800, moraleDelta: 6, revenueMod: 0.97 } },
+    ]
+  },
+  { title: '⚠️ DILEMMA: Inventory Gamble', text: 'A supplier offers 3x stock at 20% discount — pay upfront, 40% of your cash.',
+    options: [
+      { label: 'Take the deal', desc: 'Huge upside if demand holds. Major cash risk.', effect: { invBonus: 2.5, cashFrac: -0.4, moraleDelta: 2 } },
+      { label: 'Partial order', desc: 'Half the deal. Moderate risk and reward.', effect: { invBonus: 1.4, cashFrac: -0.2 } },
+      { label: 'Pass on it', desc: 'Play safe. Keep cash. Miss upside.', effect: { invBonus: 1.0, moraleDelta: -2 } },
+    ]
+  },
+  { title: '⚠️ DILEMMA: Investor Ultimatum', text: '"Cut 2 staff now or I won\'t fund your next branch." What do you do?',
+    options: [
+      { label: 'Cut 2 staff', desc: 'Save payroll. Morale crashes. Investor stays.', effect: { forcedLayoff: 2, moraleDelta: -22, cashMod: 16000 } },
+      { label: 'Refuse — your way', desc: 'Morale stays high. Investor walks. Tighter cash.', effect: { moraleDelta: 10, revenueMod: 0.86 } },
+      { label: 'Negotiate — cut 1', desc: 'Compromise. Partial impact both ways.', effect: { forcedLayoff: 1, moraleDelta: -9, cashMod: 8000 } },
+    ]
+  },
+  { title: '⚠️ DILEMMA: Radio Ad Bet', text: 'Prime-time radio ads available for KES 9,000. Your brand is currently moderate.',
+    options: [
+      { label: 'Go all-in on radio', desc: 'Brand surges. Big cash hit.', effect: { cashMod: -9000, brandDelta: 20, revenueMod: 1.17 } },
+      { label: 'Social media only', desc: 'Cheaper, slower results. KES 1,800.', effect: { cashMod: -1800, brandDelta: 8, revenueMod: 1.06 } },
+      { label: 'Skip marketing', desc: 'Save cash. Brand stagnates.', effect: { brandDelta: -2 } },
+    ]
+  },
+  { title: '⚠️ DILEMMA: Overtime or Lose Sales?', text: 'Peak season hit harder than expected. Overtime or risk losing customers?',
+    options: [
+      { label: 'Mandate overtime', desc: 'Revenue jumps. Morale drops. Extra KES 4,500.', effect: { cashMod: -4500, moraleDelta: -11, revenueMod: 1.26 } },
+      { label: 'Hire temp staff', desc: 'Smooth ops. KES 6,500 one-off.', effect: { cashMod: -6500, moraleDelta: 6, revenueMod: 1.2 } },
+      { label: 'Accept lower output', desc: 'No extra cost. Brand dips. Customers unhappy.', effect: { brandDelta: -7, revenueMod: 0.88 } },
+    ]
+  },
+  { title: '⚠️ DILEMMA: Cash Crisis — Loan Offer', text: 'You\'re nearly out of cash. A lender offers KES 20,000 at 8% per quarter. Take it?',
+    options: [
+      { label: 'Accept the loan', desc: 'Survive this quarter. Debt burden going forward.', effect: { loanAmount: 20000, moraleDelta: 3 } },
+      { label: 'Cut all expenses', desc: 'No loan. Slash inventory and marketing drastically.', effect: { invCap: 3000, cashMod: 0, moraleDelta: -8 } },
+      { label: 'Ask staff to defer pay', desc: 'Delay half payroll. Staff morale craters.', effect: { cashMod: 4000, moraleDelta: -20 } },
+    ]
+  },
+];
+
+// ══════════════════════════════════════════
+//  COMPETITOR AI
+// ══════════════════════════════════════════
+// Competitor reacts to player's pricing and brand each quarter
+function initCompetitor() {
+  return { brand: 45, price: 'mid', aggressiveness: 0.5, name: 'Rival Traders Ltd', emoji: '🏴' };
+}
+
+function updateCompetitor(comp, playerBrand, playerPricing, playerRevenue) {
+  // Rival gets smarter if you're doing well
+  if (playerBrand > 60) comp.aggressiveness = Math.min(1, comp.aggressiveness + 0.07);
+  // Rival mirrors pricing if you dominate
+  if (playerPricing === 'premium' && playerRevenue > 40000) comp.price = 'mid'; // undercut
+  if (playerPricing === 'low') comp.price = 'low'; // match
+  // Rival brand grows naturally
+  comp.brand = Math.min(90, comp.brand + 2 + Math.random() * 3);
+  return comp;
+}
+
+function competitorEffect(comp, playerPricing) {
+  // Returns revenue multiplier from competitor pressure
+  const brandGap = comp.brand - 45;
+  let pressure = 1 - (comp.aggressiveness * 0.12) - (brandGap > 10 ? 0.05 : 0);
+  if (comp.price === playerPricing) pressure -= 0.05; // direct competition
+  return Math.max(0.7, pressure);
+}
+
+// ══════════════════════════════════════════
+//  GAME STATE
+// ══════════════════════════════════════════
+let CANDIDATE = { name: '', role: '', exp: 0, bg: 'none' };
+let empIdCounter = 100;
+let G;
+let _modalAction = null;
+
+function makeEmp(name, role, avatar, isNew) {
+  return { id: empIdCounter++, name, role, avatar, morale: 80, new: !!isNew };
+}
+
+function newGameState() {
+  return {
+    phase: 1, globalQuarter: 1, totalCash: INITIAL_CASH,
+    totalRevenue: 0, totalProfit: 0, totalLayoffs: 0, totalHires: 0,
+    activeBranch: 0, branches: [newBranch(0)], history: [],
+    profitHistory: [], journalEntries: [],
+    competencies: { 'Financial Acumen': 0, 'Strategic Thinking': 0, 'Team Leadership': 0, 'Risk Management': 0, 'Market Awareness': 0, 'Crisis Management': 0 },
+    currentEvent: null, revealedEvent: null,
+    currentDilemma: null, dilemmaChoice: null,
+    pendingHires: 0, pendingLayoffs: 0,
+    loanBalance: 0, loanInterestRate: LOAN_INTEREST,
+    competitor: initCompetitor(),
+    done: false,
+  };
+}
+
+function newBranch(idx) {
+  const b = { id: idx, unlocked: idx === 0, cash: idx === 0 ? INITIAL_CASH : 0, revenue: 0, profit: 0, brand: 50, morale: 80, marketShare: 10, quartersDone: 0, quartersProfit: 0, employees: [], history: [] };
+  if (idx === 0) {
+    b.employees = [
+      makeEmp('Amina W.', 'Sales Lead', '👩🏾'),
+      makeEmp('Brian O.', 'Stock Manager', '👨🏿'),
+      makeEmp('Cynthia M.', 'Cashier', '👩🏽'),
+      makeEmp('David K.', 'Marketing', '👨🏾'),
+    ];
+  }
+  return b;
+}
+
+function genEmpName() { return EMPLOYEE_NAMES[Math.floor(Math.random() * EMPLOYEE_NAMES.length)] + ' ' + 'ABCDEFGHKMNOPRSTW'[Math.floor(Math.random() * 17)] + '.'; }
+function genEmpRole() { return EMPLOYEE_ROLES[Math.floor(Math.random() * EMPLOYEE_ROLES.length)]; }
+function genEmpAvatar() { return EMPLOYEE_AVATARS[Math.floor(Math.random() * EMPLOYEE_AVATARS.length)]; }
+
+// ══════════════════════════════════════════
+//  ONBOARDING
+// ══════════════════════════════════════════
+function startSim() {
+  const name = document.getElementById('obName').value.trim();
+  const role = document.getElementById('obRole').value.trim();
+  if (!name || !role) { alert('Please enter your name and the role you are applying for.'); return; }
+  CANDIDATE = { name, role, exp: parseInt(document.getElementById('obExp').value), bg: document.getElementById('obBg').value };
+  document.getElementById('onboarding').style.display = 'none';
+  document.getElementById('simApp').style.display = 'block';
+  document.getElementById('candidateBadge').innerHTML = `Candidate: <strong>${name}</strong> — ${role}`;
+  G = newGameState();
+  G.currentEvent = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+  if (Math.random() < 0.3) G.currentDilemma = DILEMMAS[Math.floor(Math.random() * DILEMMAS.length)];
+  render();
+  drawChart(); drawRadar();
+}
+
+// ══════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════
+function render() {
+  updateHeaderStats();
+  renderBranchTabs();
+  renderWorkspace();
+  renderSidebar();
+}
+
+function updateHeaderStats() {
+  document.getElementById('hCash').textContent = fmtKES(G.totalCash);
+  const debtEl = document.getElementById('hDebt');
+  debtEl.textContent = G.loanBalance > 0 ? fmtKES(G.loanBalance) : '—';
+  debtEl.className = 'hstat-val' + (G.loanBalance > 0 ? ' down' : '');
+  document.getElementById('hPhase').textContent = `B${G.phase} · ${BRANCH_LOCATIONS[G.phase-1].name}`;
+  document.getElementById('hQuarter').textContent = 'Q' + G.globalQuarter;
+  document.getElementById('hStaff').textContent = G.branches.reduce((s, b) => s + b.employees.length, 0);
+  const pEl = document.getElementById('hProfit');
+  pEl.textContent = G.totalProfit === 0 ? '—' : (G.totalProfit > 0 ? '+' : '') + fmtKES(G.totalProfit);
+  pEl.className = 'hstat-val' + (G.totalProfit > 0 ? ' up' : G.totalProfit < 0 ? ' down' : '');
+}
+
+function renderBranchTabs() {
+  G.branches.forEach((b, i) => {
+    const tab = document.getElementById('btab' + i);
+    if (!tab) return;
+    tab.className = 'branch-tab' + (G.activeBranch === i ? ' active' : '');
+    tab.innerHTML = BRANCH_LOCATIONS[i].emoji + ' ' + BRANCH_LOCATIONS[i].name + ' <span class="btag">B' + (i+1) + '</span>';
+    tab.onclick = () => selectBranch(i);
+  });
+  for (let i = G.branches.length; i < 3; i++) {
+    const tab = document.getElementById('btab' + i);
+    if (tab) { tab.className = 'branch-tab locked'; tab.onclick = null; tab.innerHTML = '🔒 Branch '+(i+1)+' <span class="btag">LOCKED</span>'; }
+  }
+  const all = document.getElementById('btabAll');
+  if (all) { all.className = 'branch-tab' + (G.activeBranch === -1 ? ' active' : ''); all.onclick = showAllBranches; }
+}
+
+function selectBranch(i) { if (i < G.branches.length) { G.activeBranch = i; render(); } }
+function showAllBranches() { G.activeBranch = -1; render(); }
+
+// ══════════════════════════════════════════
+//  WORKSPACE
+// ══════════════════════════════════════════
+function renderWorkspace() {
+  const ws = document.getElementById('workspace');
+  if (G.activeBranch === -1) { ws.innerHTML = renderEmpireView(); return; }
+  const b = G.branches[G.activeBranch];
+  const loc = BRANCH_LOCATIONS[G.activeBranch];
+  const isActive = G.activeBranch === G.phase - 1;
+  let html = '';
+
+  // Branch header
+  html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+    <div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.05em;color:var(--ochre);">${loc.emoji} ${loc.name} Branch</div>
+      <div style="font-size:0.7rem;color:var(--muted);">${loc.desc}</div>
+    </div>
+    <div style="display:flex;gap:0.5rem;align-items:center;">${branchStatusBadge(b)}<span style="font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);">Qtrs: ${b.quartersDone} | Profitable: ${b.quartersProfit}</span></div>
+  </div>`;
+
+  // Metrics
+  html += `<div class="metrics-row">
+    <div class="metric"><div class="m-label">Branch Cash</div><div class="m-value">${fmtKES(b.cash)}</div></div>
+    <div class="metric"><div class="m-label">Last Revenue</div><div class="m-value ${b.revenue > 0 ? 'up' : ''}">${b.revenue > 0 ? fmtKES(b.revenue) : '—'}</div></div>
+    <div class="metric"><div class="m-label">Last P/L</div><div class="m-value ${b.profit > 0 ? 'up' : b.profit < 0 ? 'down' : ''}">${b.profit !== 0 ? (b.profit>0?'+':'') + fmtKES(b.profit) : '—'}</div></div>
+    <div class="metric"><div class="m-label">Brand Score</div><div class="m-value">${Math.round(b.brand)}/100</div></div>
+    <div class="metric"><div class="m-label">Team Morale</div><div class="m-value ${b.morale>=70?'up':b.morale>=40?'warn':'down'}">${Math.round(b.morale)}%</div></div>
+    <div class="metric"><div class="m-label">Staff</div><div class="m-value">${b.employees.length}</div></div>
+  </div>`;
+
+  if (!isActive) {
+    html += `<div class="warn-banner show">⚠️ This is a past branch. Reviewing history only — decisions are made in the active phase.</div>`;
+    html += renderBranchHistory(b);
+    ws.innerHTML = html;
+    return;
+  }
+
+  // Warnings
+  if (b.morale < 40) html += `<div class="warn-banner show">⚠️ Team morale critically low (${Math.round(b.morale)}%). Risk of resignations!</div>`;
+  if (G.totalCash < 8000) html += `<div class="warn-banner show">🚨 Cash critically low (${fmtKES(G.totalCash)}). You may need a loan to survive this quarter.</div>`;
+  if (G.loanBalance > 0) html += `<div class="warn-banner show">💳 Active loan: ${fmtKES(G.loanBalance)} outstanding. Interest: ${fmtKES(G.loanBalance * G.loanInterestRate)}/qtr deducted automatically.</div>`;
+
+  // Loan panel (if available)
+  if (G.totalCash < 20000) {
+    html += `<div class="loan-card">
+      <div class="loan-label">🏦 EMERGENCY LOAN AVAILABLE</div>
+      <div class="loan-stats">
+        ${LOAN_AMOUNTS.map((amt, i) => `<div class="loan-stat"><div class="loan-stat-label">Option ${i+1}</div><div class="loan-stat-val">KES ${amt.toLocaleString()}</div></div>`).join('')}
+        <div class="loan-stat"><div class="loan-stat-label">Interest/Qtr</div><div class="loan-stat-val">${(LOAN_INTEREST*100)}%</div></div>
+      </div>
+      <div class="loan-warning">⚠️ Loans compound every quarter. Use sparingly — debt will reduce your final HR score.</div>
+      <div class="btn-row" style="margin-top:0.6rem">
+        ${LOAN_AMOUNTS.map((amt, i) => `<button class="btn btn-blue" style="font-size:0.75rem;padding:0.4rem 0.7rem;" onclick="takeLoan(${amt})">Borrow KES ${(amt/1000)}K</button>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Competitor AI
+  const comp = G.competitor;
+  html += `<div class="competitor-card">
+    <div class="comp-header">
+      <div class="comp-label">${comp.emoji} COMPETITOR INTEL — ${comp.name}</div>
+      <span style="font-size:0.65rem;color:var(--muted);">Aggression: ${Math.round(comp.aggressiveness*100)}%</span>
+    </div>
+    <div class="comp-stats">
+      <div class="comp-stat"><div class="comp-stat-label">Their Brand</div><div class="comp-stat-val">${Math.round(comp.brand)}/100</div></div>
+      <div class="comp-stat"><div class="comp-stat-label">Their Pricing</div><div class="comp-stat-val">${comp.price.toUpperCase()}</div></div>
+      <div class="comp-stat"><div class="comp-stat-label">Your Lead</div><div class="comp-stat-val ${b.brand > comp.brand ? 'up' : 'down'}">${b.brand > comp.brand ? '+' : ''}${Math.round(b.brand - comp.brand)} pts</div></div>
+    </div>
+    <div class="comp-action">${getCompetitorWarning(comp, b)}</div>
+  </div>`;
+
+  // Hidden event warning
+  html += `<div class="hidden-event-banner">
+    🎲 <strong>Hidden Market Event incoming</strong> — The quarter's event is sealed. You'll see it only after your decisions are locked in. Plan carefully.
+  </div>`;
+
+  // Revealed event (after running)
+  if (G.revealedEvent) {
+    html += `<div class="event-card revealed">
+      <div class="event-label">📰 REVEALED — Last Quarter's Event</div>
+      <div class="event-text">${G.revealedEvent.text}</div>
+    </div>`;
+  }
+
+  // Dilemma
+  if (G.currentDilemma) {
+    const d = G.currentDilemma;
+    html += `<div class="dilemma-card">
+      <div class="dilemma-title">${d.title}</div>
+      <div class="dilemma-text">${d.text}</div>
+      <div class="dilemma-options">
+        ${d.options.map((o, i) => `<div class="dilemma-opt ${G.dilemmaChoice === i ? 'chosen' : ''}" onclick="chooseDilemma(${i})">
+          <span class="dilemma-opt-label">Option ${String.fromCharCode(65+i)}</span>
+          <strong>${o.label}</strong><br>${o.desc}
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // DECISIONS
+  html += `<div class="card">
+    <div class="card-head"><div class="card-title accent">📋 Q${G.globalQuarter} DECISIONS — ${loc.name.toUpperCase()}</div><span style="font-size:0.68rem;color:var(--muted);">Payroll this qtr: ${fmtKES(b.employees.length * SALARY_PER_EMP)}</span></div>
+
+    <div class="field">
+      <label>📦 Inventory Budget</label>
+      <div class="hint">Higher stock = more potential sales but ties up cash. Max capped at 55% of cash.</div>
+      <input type="range" id="inv" min="1000" max="${Math.max(1000, Math.min(G.totalCash * 0.55, 45000))}" step="1000" value="${Math.min(10000, Math.max(1000, G.totalCash * 0.25))}" oninput="rangeUpdate('inv','invVal','KES ')"/>
+      <div class="range-row"><span class="range-min">KES 1K</span><span class="range-cur" id="invVal">KES 10,000</span><span class="range-max">KES 45K</span></div>
+    </div>
+
+    <div class="field">
+      <label>🏷️ Pricing Strategy</label>
+      <select id="pricing">
+        <option value="low">Budget — thin margin, high volume. Competitor may match.</option>
+        <option value="mid" selected>Mid-Market — balanced margin & demand</option>
+        <option value="premium">Premium — high margin, selective buyers. Brand must be strong.</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>📣 Marketing Spend</label>
+      <div class="hint">Grows brand and outpaces competitor. Consistent spend compounds over time.</div>
+      <input type="range" id="mkt" min="0" max="12000" step="500" value="1000" oninput="rangeUpdate('mkt','mktVal','KES ')"/>
+      <div class="range-row"><span class="range-min">None</span><span class="range-cur" id="mktVal">KES 1,000</span><span class="range-max">KES 12K</span></div>
+    </div>
+
+    <div class="field">
+      <label>⚙️ Operations Focus</label>
+      <select id="ops">
+        <option value="efficiency">Cost Efficiency — cut overheads, protect margin</option>
+        <option value="quality" selected>Customer Experience — loyalty, repeat buyers</option>
+        <option value="speed">Speed & Volume — more transactions, less care</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>🎁 Staff Welfare</label>
+      <select id="welfare">
+        <option value="none">No additional investment (morale drifts down)</option>
+        <option value="training" selected>Training programme (KES 2,500) — moderate morale boost</option>
+        <option value="bonus">Performance bonuses (KES 4,000) — big morale boost</option>
+        <option value="party">Team outing (KES 1,500) — small boost, great loyalty</option>
+      </select>
+    </div>
+  </div>`;
+
+  // WORKFORCE MANAGEMENT
+  html += `<div class="card">
+    <div class="card-head"><div class="card-title accent">👥 WORKFORCE — ${loc.name}</div></div>
+    <div class="hint">Each hire: KES ${HIRE_COST.toLocaleString()} upfront + KES ${SALARY_PER_EMP.toLocaleString()}/qtr salary. Layoffs save money but hurt morale hard and may trigger resignations.</div>
+    <div class="emp-controls">
+      <div class="emp-btn-group">
+        <div class="emp-btn-label">🟢 Hire Staff</div>
+        <div class="stepper"><div class="step-btn" onclick="adjustHires(-1)">−</div><div class="step-val" id="hireCount">0</div><div class="step-btn" onclick="adjustHires(1)">+</div></div>
+        <div class="emp-cost-preview" id="hireCostPreview">Cost: KES 0</div>
+      </div>
+      <div class="emp-btn-group">
+        <div class="emp-btn-label">🔴 Lay Off Staff</div>
+        <div class="stepper"><div class="step-btn danger" onclick="adjustLayoffs(-1)">−</div><div class="step-val" id="layoffCount">0</div><div class="step-btn danger" onclick="adjustLayoffs(1)">+</div></div>
+        <div class="emp-cost-preview" id="layoffCostPreview">Morale hit: 0%</div>
+      </div>
+    </div>
+    <div style="font-size:0.7rem;color:var(--muted);margin-bottom:0.6rem;">Projected staff after this quarter: <span id="projStaff" style="color:var(--ochre);font-family:'DM Mono',monospace;">${b.employees.length}</span></div>
+    <div class="roster" id="rosterGrid">${b.employees.map(e => empCard(e)).join('')}</div>
+  </div>`;
+
+  // DECISION JOURNAL
+  html += `<div class="journal-card">
+    <div class="journal-label">📝 Decision Journal — Q${G.globalQuarter}</div>
+    <div class="journal-prompt">In 1–2 sentences: <strong>Why did you make these decisions?</strong> What's your strategic reasoning this quarter? (Required by HR assessor)</div>
+    <textarea id="journalEntry" placeholder="e.g. I'm keeping inventory low because cash is tight after last quarter's loss. I'm investing in training to rebuild morale before the next branch opens..."></textarea>
+  </div>`;
+
+  // Run button
+  html += `<div class="btn-row">
+    <button class="btn btn-primary" onclick="runQuarter()">▶ Lock In & Run Q${G.globalQuarter}</button>
+    <button class="btn btn-ghost" onclick="resetAll()">↺ Reset</button>
+  </div>`;
+
+  ws.innerHTML = html;
+  setTimeout(() => { rangeUpdate('inv','invVal','KES '); rangeUpdate('mkt','mktVal','KES '); G.pendingHires = 0; G.pendingLayoffs = 0; updateEmpPreviews(); }, 10);
+}
+
+function getCompetitorWarning(comp, b) {
+  if (comp.aggressiveness > 0.75) return `🔴 Rival is very aggressive — actively undercutting prices and poaching your customers. Invest in marketing or risk losing market share.`;
+  if (comp.brand > b.brand) return `⚠️ Rival's brand (${Math.round(comp.brand)}) now exceeds yours (${Math.round(b.brand)}). Customers are starting to prefer them.`;
+  if (comp.aggressiveness > 0.5) return `⚡ Rival is ramping up — watch your pricing strategy. They're mirroring your moves.`;
+  return `✅ Rival is manageable right now. Your brand leads by ${Math.round(b.brand - comp.brand)} pts. Stay consistent.`;
+}
+
+function empCard(e) {
+  const mc = e.morale >= 70 ? 'var(--sage)' : e.morale >= 40 ? 'var(--gold)' : 'var(--red)';
+  return `<div class="emp-card ${e.new ? 'new-hire' : ''}"><div class="emp-avatar">${e.avatar}</div><div><div class="emp-name">${e.name}</div><div class="emp-role">${e.role}</div></div><div class="emp-morale-dot" style="background:${mc}"></div></div>`;
+}
+
+function renderBranchHistory(b) {
+  if (!b.history.length) return '<p style="font-size:0.78rem;color:var(--muted);">No history yet.</p>';
+  return b.history.map((h, i) => `<div class="hist-item ${h.profit>=0?'profit':'loss'}"><div class="hist-q">Quarter ${i+1}</div>Revenue: <strong>${fmtKES(h.revenue)}</strong> · Profit: <strong style="color:${h.profit>=0?'var(--sage)':'var(--red)'}">${h.profit>=0?'+':''}${fmtKES(h.profit)}</strong> · Staff: ${h.staffCount}</div>`).join('');
+}
+
+function renderEmpireView() {
+  let html = `<div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.05em;color:var(--ochre);margin-bottom:1rem;">📊 Empire Overview — ${CANDIDATE.name}</div>`;
+  html += `<div class="branch-overview">${G.branches.map((b, i) => `<div class="bov-card" onclick="selectBranch(${i})"><div class="bov-name">${BRANCH_LOCATIONS[i].emoji} ${BRANCH_LOCATIONS[i].name} ${branchStatusBadge(b)}</div><div class="bov-loc">${BRANCH_LOCATIONS[i].desc}</div><div class="bov-stats">Cash: ${fmtKES(b.cash)}<br>Staff: ${b.employees.length}<br>Brand: ${Math.round(b.brand)}/100<br>Morale: ${Math.round(b.morale)}%<br>Profitable: ${b.quartersProfit}/${b.quartersDone} qtrs</div></div>`).join('')}</div>`;
+  html += `<div class="metrics-row"><div class="metric"><div class="m-label">Total Cash</div><div class="m-value">${fmtKES(G.totalCash)}</div></div><div class="metric"><div class="m-label">Total Revenue</div><div class="m-value up">${fmtKES(G.totalRevenue)}</div></div><div class="metric"><div class="m-label">Net Profit</div><div class="m-value ${G.totalProfit>=0?'up':'down'}">${G.totalProfit>=0?'+':''}${fmtKES(G.totalProfit)}</div></div><div class="metric"><div class="m-label">Active Debt</div><div class="m-value ${G.loanBalance>0?'down':''}">${G.loanBalance>0?fmtKES(G.loanBalance):'None'}</div></div><div class="metric"><div class="m-label">Total Hires</div><div class="m-value">${G.totalHires}</div></div><div class="metric"><div class="m-label">Total Layoffs</div><div class="m-value ${G.totalLayoffs>6?'warn':''}">${G.totalLayoffs}</div></div></div>`;
+  return html;
+}
+
+// ══════════════════════════════════════════
+//  EMPLOYEE CONTROLS
+// ══════════════════════════════════════════
+function adjustHires(delta) {
+  const maxH = Math.floor((G.totalCash - 4000) / (HIRE_COST + SALARY_PER_EMP));
+  G.pendingHires = Math.max(0, Math.min(G.pendingHires + delta, Math.max(0, maxH)));
+  updateEmpPreviews();
+}
+function adjustLayoffs(delta) {
+  const b = G.branches[G.activeBranch];
+  G.pendingLayoffs = Math.max(0, Math.min(G.pendingLayoffs + delta, b.employees.length - 1));
+  updateEmpPreviews();
+}
+function updateEmpPreviews() {
+  const b = G.branches[G.activeBranch];
+  const h = document.getElementById('hireCount'), l = document.getElementById('layoffCount'), p = document.getElementById('projStaff');
+  const hc = document.getElementById('hireCostPreview'), lc = document.getElementById('layoffCostPreview');
+  if (!h) return;
+  h.textContent = G.pendingHires; l.textContent = G.pendingLayoffs;
+  if (p) p.textContent = b.employees.length + G.pendingHires - G.pendingLayoffs;
+  if (hc) hc.textContent = `Cost: KES ${(G.pendingHires * HIRE_COST).toLocaleString()} upfront`;
+  if (lc) lc.textContent = `Morale hit: ${G.pendingLayoffs * 12}%`;
+}
+function chooseDilemma(i) { G.dilemmaChoice = i; renderWorkspace(); }
+
+// ══════════════════════════════════════════
+//  LOAN MECHANIC
+// ══════════════════════════════════════════
+function takeLoan(amount) {
+  if (G.loanBalance > 0) { showNotif('⚠️ You already have an active loan. Repay it first.', 'warn'); return; }
+  G.loanBalance = amount;
+  G.totalCash += amount;
+  showNotif(`🏦 Loan of ${fmtKES(amount)} approved. Interest: ${fmtKES(amount * G.loanInterestRate)}/quarter.`, 'warn');
+  render();
+}
+
+// ══════════════════════════════════════════
+//  QUARTER ENGINE
+// ══════════════════════════════════════════
+function runQuarter() {
+  const b = G.branches[G.activeBranch];
+  if (G.currentDilemma && G.dilemmaChoice === null) { showNotif('⚠️ Resolve the dilemma before running the quarter!', 'warn'); return; }
+
+  const journalEl = document.getElementById('journalEntry');
+  const journalText = journalEl ? journalEl.value.trim() : '';
+  if (!journalText) { showNotif('📝 Please write your strategic reasoning in the Decision Journal before proceeding.', 'warn'); if (journalEl) journalEl.focus(); return; }
+
+  // Read decisions
+  const inv = parseInt(document.getElementById('inv').value);
+  const pricing = document.getElementById('pricing').value;
+  const mkt = parseInt(document.getElementById('mkt').value);
+  const ops = document.getElementById('ops').value;
+  const welfare = document.getElementById('welfare').value;
+  const welfareCosts = { none:0, training:2500, bonus:4000, party:1500 };
+  const welfareMorale = { none:-4, training:10, bonus:18, party:8 };
+  const wCost = welfareCosts[welfare], wMorale = welfareMorale[welfare];
+
+  // Apply hires / layoffs
+  const hireCost = G.pendingHires * HIRE_COST;
+  for (let i = 0; i < G.pendingHires; i++) b.employees.push(makeEmp(genEmpName(), genEmpRole(), genEmpAvatar(), true));
+  G.totalHires += G.pendingHires;
+  let layoffMoralePenalty = 0;
+  for (let i = 0; i < G.pendingLayoffs && b.employees.length > 1; i++) {
+    b.employees.sort((a, c) => a.morale - c.morale); b.employees.shift();
+    layoffMoralePenalty += 12; G.totalLayoffs++;
+  }
+
+  // Loan interest deduction
+  let loanInterestPaid = 0;
+  if (G.loanBalance > 0) {
+    loanInterestPaid = G.loanBalance * G.loanInterestRate;
+    G.totalCash -= loanInterestPaid;
+  }
+
+  const salary = b.employees.length * SALARY_PER_EMP;
+  const totalFixed = hireCost + salary + wCost + mkt + loanInterestPaid;
+
+  if (inv + totalFixed > G.totalCash) {
+    showNotif(`🚨 Not enough cash! Have: ${fmtKES(G.totalCash)}, Need: ${fmtKES(inv + totalFixed)}. Consider a loan or reduce expenses.`, 'danger');
+    return;
+  }
+
+  // Dilemma effect
+  let de = { cashMod:0, moraleDelta:0, revenueMod:1, brandDelta:0, invBonus:1, forcedLayoff:0, loanAmount:0, invCap:null, cashFrac:0 };
+  if (G.currentDilemma && G.dilemmaChoice !== null) {
+    Object.assign(de, G.currentDilemma.options[G.dilemmaChoice].effect);
+    if (de.cashFrac) { de.cashMod = de.cashFrac * G.totalCash; de.cashFrac = 0; }
+    if (de.loanAmount) { takeLoan(de.loanAmount); de.loanAmount = 0; }
+    if (de.forcedLayoff > 0) {
+      for (let i = 0; i < de.forcedLayoff && b.employees.length > 1; i++) { b.employees.sort((a,c)=>a.morale-c.morale); b.employees.shift(); G.totalLayoffs++; }
+    }
+  }
+
+  // Reveal hidden event NOW (after decisions locked)
+  const ev = G.currentEvent;
+  G.revealedEvent = ev;
+
+  // Competitor effect
+  const compEffect = competitorEffect(G.competitor, pricing);
+
+  // Revenue engine
+  const pMods = { low:{margin:0.11,demand:1.42}, mid:{margin:0.26,demand:1.0}, premium:{margin:0.44,demand:0.65} };
+  const pm = pMods[pricing];
+  const brandBoost = 1 + (b.brand - 50) / 170;
+  const moraleBoost = 1 + (b.morale - 50) / 240;
+  const staffBoost = Math.min(1.45, 1 + (b.employees.length - 4) * 0.055);
+  const mktBoost = 1 + (mkt / 12000) * 0.48;
+  const opsBoost = ops === 'speed' ? 1.15 : ops === 'quality' ? 1.07 : 1.0;
+  const phaseBoost = G.activeBranch === 1 ? 1.12 : G.activeBranch === 2 ? 1.2 : 1.0;
+  const effectiveInv = (de.invCap ? Math.min(inv, de.invCap) : inv) * (de.invBonus || 1);
+  const sellable = effectiveInv * (0.6 + Math.random() * 0.6);
+  let revenue = sellable * (1+pm.margin) * pm.demand * brandBoost * moraleBoost * staffBoost * mktBoost * opsBoost * phaseBoost * (ev?.mod||1) * (de.revenueMod||1) * compEffect;
+  revenue *= 0.88 + Math.random() * 0.24; // ±12% randomness
+
+  const profit = revenue - inv - totalFixed + (de.cashMod || 0);
+  const customers = Math.round(revenue / (pricing==='premium'?650:pricing==='low'?190:370));
+
+  // State updates
+  G.totalCash += profit;
+  b.cash += profit; b.revenue = revenue; b.profit = profit;
+  b.quartersDone++; if (profit > 0) b.quartersProfit++;
+  b.brand = Math.min(100, Math.max(5, b.brand + (mkt/12000)*20 + (profit>0?3:-5) + (de.brandDelta||0)));
+  b.morale = Math.min(100, Math.max(5, b.morale + (ev?.moraleDelta||0) + wMorale + (profit>0?5:-8) - layoffMoralePenalty + (de.moraleDelta||0)));
+  b.employees.forEach(e => { e.new = false; e.morale = Math.min(100, Math.max(10, b.morale + (Math.random()-0.5)*20)); });
+
+  // Spontaneous resignation if morale < 30
+  if (b.morale < 30 && b.employees.length > 1 && Math.random() < 0.45) {
+    b.employees.sort((a,c)=>a.morale-c.morale);
+    const quit = b.employees.shift();
+    showNotif(`😤 ${quit.name} resigned due to low morale! Understaffing risk.`, 'danger');
+  }
+
+  G.totalRevenue += revenue; G.totalProfit += profit; G.profitHistory.push(profit);
+  b.history.push({ revenue, profit, staffCount: b.employees.length, morale: b.morale, brand: b.brand });
+
+  // Update competitor
+  G.competitor = updateCompetitor(G.competitor, b.brand, pricing, revenue);
+
+  // Save journal
+  G.journalEntries.push({ q: G.globalQuarter, branch: BRANCH_LOCATIONS[G.activeBranch].name, text: journalText, profit, pricing, welfare });
+
+  // History
+  G.history.push({ q: G.globalQuarter, branch: G.activeBranch, revenue, profit, customers, pricing, mkt, event: ev?.text||'Normal', dilemma: G.currentDilemma?.title||null, dilemmaChoice: G.dilemmaChoice!==null ? G.currentDilemma.options[G.dilemmaChoice].label : null });
+
+  // Update HR competencies
+  updateCompetencies(inv, pricing, mkt, welfare, ops, profit, revenue, journalText);
+
+  G.globalQuarter++;
+  G.currentDilemma = null; G.dilemmaChoice = null; G.pendingHires = 0; G.pendingLayoffs = 0;
+
+  // Cash crisis — if bankrupt
+  if (G.totalCash <= 0) {
+    G.totalCash = 0;
+    showModal({ icon:'💥', title:'BRANCH BANKRUPT', sub:'You ran out of cash. The simulation ends here.', stats:[{label:'Final Profit',val:(profit>=0?'+':'')+fmtKES(profit)},{label:'Total Revenue',val:fmtKES(G.totalRevenue)},{label:'Quarters Run',val:G.globalQuarter-1}], score:null, hrNote:`<strong>HR Note:</strong> Candidate failed to maintain positive cash flow. This reflects insufficient financial planning under pressure. Final competency scores logged.`, showJournal:true, btnText:'↺ Try Again', action:resetAll });
+    return;
+  }
+
+  checkPhaseProgress(b);
+}
+
+function checkPhaseProgress(b) {
+  const phase = G.phase;
+  const phaseQtrs = PHASE_QUARTERS[phase - 1];
+  const ab = G.branches[phase - 1];
+
+  if (ab.quartersDone >= phaseQtrs) {
+    const qualifyRatio = ab.quartersProfit / ab.quartersDone;
+    const qualified = qualifyRatio >= 0.5 && G.totalCash >= BRANCH_UNLOCK_COST[phase > 0 ? phase : 0];
+
+    if (phase < 3) {
+      if (qualified && G.totalCash >= BRANCH_UNLOCK_COST[phase]) showPhaseTransition(phase, true);
+      else showPhaseTransition(phase, false);
+    } else {
+      showFinalResult();
+    }
+  } else {
+    G.currentEvent = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+    if (Math.random() < 0.38) G.currentDilemma = DILEMMAS[Math.floor(Math.random() * DILEMMAS.length)];
+    showNotif(b.profit > 0 ? `✅ Q${G.globalQuarter-1} — Profit: +${fmtKES(b.profit)}` : `📉 Q${G.globalQuarter-1} — Loss: -${fmtKES(Math.abs(b.profit))}`, b.profit > 0 ? 'success' : 'danger');
+    render(); renderSidebar(); drawChart(); drawRadar();
+  }
+}
+
+function showPhaseTransition(phase, success) {
+  const b = G.branches[phase - 1];
+  const nextLoc = BRANCH_LOCATIONS[phase];
+  const cost = BRANCH_UNLOCK_COST[phase];
+
+  if (success) {
+    G.totalCash -= cost;
+    G.phase = phase + 1;
+    const nb = newBranch(phase);
+    nb.employees = [makeEmp(genEmpName(),'Branch Supervisor',genEmpAvatar()), makeEmp(genEmpName(),'Sales Lead',genEmpAvatar()), makeEmp(genEmpName(),'Cashier',genEmpAvatar())];
+    nb.unlocked = true; nb.cash = Math.min(G.totalCash * 0.35, 25000);
+    G.branches.push(nb);
+    document.getElementById('phaseBanner').style.display = 'block';
+    document.getElementById('phaseBanner').textContent = `🎉 ${nextLoc.name.toUpperCase()} BRANCH UNLOCKED — OPENING COST: KES ${cost.toLocaleString()}`;
+    G.currentEvent = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+    if (Math.random() < 0.45) G.currentDilemma = DILEMMAS[Math.floor(Math.random() * DILEMMAS.length)];
+    G.activeBranch = phase;
+    showModal({ icon:'🏬', title:`BRANCH ${phase+1} APPROVED!`, sub:`${BRANCH_LOCATIONS[phase-1].name} qualified. You're opening at ${nextLoc.name}. Opening cost KES ${cost.toLocaleString()} deducted.`, stats:[{label:'Profitable Qtrs',val:b.quartersProfit+'/'+b.quartersDone},{label:'Remaining Cash',val:fmtKES(G.totalCash)},{label:'Staff Transferred',val:'3'}], score:null, hrNote:`Now managing ${phase+1} branches simultaneously. ${nextLoc.desc} Watch your payroll — it compounds across locations.`, showJournal:false, btnText:`Open ${nextLoc.name} →`, action:() => { render(); renderSidebar(); drawChart(); drawRadar(); } });
+  } else {
+    showModal({ icon:'📉', title:'EXPANSION DENIED', sub:`${BRANCH_LOCATIONS[phase-1].name} did not qualify. Need 50%+ profitable quarters and KES ${cost.toLocaleString()} in cash.`, stats:[{label:'Profitable Qtrs',val:b.quartersProfit+'/'+b.quartersDone},{label:'Cash',val:fmtKES(G.totalCash)},{label:'Required Cash',val:fmtKES(cost)}], score:null, hrNote:'The assessor found insufficient performance for expansion. Candidate may need more strategic coaching before a multi-branch role.', showJournal:true, btnText:'↺ Try Again', action:resetAll });
+  }
+}
+
+function showFinalResult() {
+  const scores = G.competencies;
+  const overall = Math.round(Object.values(scores).reduce((a,b)=>a+b,0) / Object.keys(scores).length);
+  const debtPenalty = G.loanBalance > 0 ? Math.round(G.loanBalance / 1000) : 0;
+  const adjScore = Math.max(0, overall - debtPenalty);
+  const topSkill = Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
+  const weakSkill = Object.entries(scores).sort((a,b)=>a[1]-b[1])[0][0];
+  const totalProfit = G.branches.reduce((s,b)=>s+b.quartersProfit,0);
+  const totalQtrs = G.branches.reduce((s,b)=>s+b.quartersDone,0);
+  const layoffRating = G.totalLayoffs > 8 ? 'High — reflects poor workforce planning' : G.totalLayoffs > 4 ? 'Moderate' : 'Low — good retention';
+  const verdict = adjScore >= 72 ? '✅ Strongly recommended for senior management role' : adjScore >= 55 ? '⚠️ Conditional — recommend mentorship before placement' : '❌ Not ready for multi-branch leadership at this time';
+
+  showModal({
+    icon:'🏆', title:'EMPIRE COMPLETE!',
+    sub:`${CANDIDATE.name} managed all 3 Nairobi branches across ${G.globalQuarter-1} quarters. Final assessment below.`,
+    stats:[{label:'Total Revenue',val:fmtKES(G.totalRevenue)},{label:'Net Profit',val:(G.totalProfit>=0?'+':'')+fmtKES(G.totalProfit)},{label:'Final Cash',val:fmtKES(G.totalCash)}],
+    score: adjScore + '%',
+    hrNote: `<strong>HR Scorecard — ${CANDIDATE.name} | ${CANDIDATE.role}</strong><br>
+      Profitable quarters: ${totalProfit}/${totalQtrs} across all branches.<br>
+      Total hires: ${G.totalHires} · Layoffs: ${G.totalLayoffs} (${layoffRating})<br>
+      Active debt at end: ${G.loanBalance > 0 ? fmtKES(G.loanBalance) + ' (−'+debtPenalty+' score pts)' : 'None ✅'}<br>
+      Competitor handled: ${G.competitor.aggressiveness > 0.7 ? '⚠️ Rival became very aggressive' : '✅ Managed well'}<br>
+      <strong>Strongest competency:</strong> ${topSkill}<br>
+      <strong>Development area:</strong> ${weakSkill}<br>
+      <strong style="color:var(--ochre)">Overall Score: ${adjScore}/100<br>${verdict}</strong>`,
+    showJournal: true, btnText:'↺ Play Again', action: resetAll
+  });
+}
+
+// ══════════════════════════════════════════
+//  COMPETENCIES
+// ══════════════════════════════════════════
+function updateCompetencies(inv, pricing, mkt, welfare, ops, profit, revenue, journalText) {
+  const c = G.competencies;
+  c['Financial Acumen'] = Math.min(100, c['Financial Acumen'] + (profit>0?13:4) + (G.totalCash>INITIAL_CASH?4:0) + (G.loanBalance===0?3:0));
+  c['Strategic Thinking'] = Math.min(100, c['Strategic Thinking'] + (((pricing==='premium'&&ops==='quality')||(pricing==='low'&&ops==='speed'))?14:8) + (journalText.length>80?4:0));
+  c['Team Leadership'] = Math.min(100, c['Team Leadership'] + ({none:2,training:12,bonus:16,party:10}[welfare]||5) + (G.pendingLayoffs===0?3:0));
+  c['Risk Management'] = Math.min(100, c['Risk Management'] + (profit>0?12:4) + (G.totalCash>8000?4:0) + (G.loanBalance===0?3:0));
+  c['Market Awareness'] = Math.min(100, c['Market Awareness'] + (mkt>5000?14:mkt>2000?9:4) + (G.competitor.brand < G.branches[G.activeBranch]?.brand?4:0));
+  if (G.currentDilemma && G.dilemmaChoice!==null) c['Crisis Management'] = Math.min(100, c['Crisis Management'] + 18);
+  else c['Crisis Management'] = Math.min(100, c['Crisis Management'] + 3);
+}
+
+// ══════════════════════════════════════════
+//  SIDEBAR
+// ══════════════════════════════════════════
+function renderSidebar() {
+  const hl = document.getElementById('historyList');
+  hl.innerHTML = G.history.length === 0
+    ? '<span style="color:var(--muted);font-size:0.75rem;">No quarters run yet.</span>'
+    : [...G.history].reverse().slice(0,8).map(h => {
+        const je = G.journalEntries.find(j => j.q === h.q);
+        return `<div class="hist-item ${h.profit>=0?'profit':'loss'}">
+          <div class="hist-q">Q${h.q} · ${BRANCH_LOCATIONS[h.branch].name}</div>
+          Rev: <strong>${fmtKES(h.revenue)}</strong> · <strong style="color:${h.profit>=0?'var(--sage)':'var(--red)'}">${h.profit>=0?'+':''}${fmtKES(h.profit)}</strong>
+          ${h.dilemmaChoice?`<br><span style="color:var(--gold);font-size:0.65rem;">⚡ ${h.dilemmaChoice}</span>`:''}
+          ${je?`<div class="hist-journal">"${je.text.slice(0,80)}${je.text.length>80?'…':''}"</div>`:''}
+        </div>`;
+      }).join('');
+
+  const hrCard = document.getElementById('hrCard');
+  if (G.history.length > 0) {
+    hrCard.style.display = 'block';
+    document.getElementById('compBars').innerHTML = Object.entries(G.competencies).map(([n,v]) =>
+      `<div class="comp-row"><div class="comp-name">${n}</div><div class="comp-track"><div class="comp-fill" style="width:${v}%"></div></div><div class="comp-score">${Math.round(v)}</div></div>`
+    ).join('');
+    drawRadar();
+  }
+}
+
+// ══════════════════════════════════════════
+//  CHARTS
+// ══════════════════════════════════════════
+function drawChart() {
+  const canvas = document.getElementById('profitChart');
+  const parent = canvas.parentElement;
+  canvas.width = parent.offsetWidth || 280; canvas.height = 100;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const data = G.profitHistory;
+  if (data.length < 1) return;
+  const maxAbs = Math.max(...data.map(Math.abs), 1);
+  const pad = {t:8,b:22,l:6,r:6};
+  const W = canvas.width-pad.l-pad.r, H = canvas.height-pad.t-pad.b;
+  const zero = pad.t + H/2;
+  const step = data.length > 1 ? W/(data.length-1) : W;
+  ctx.strokeStyle='rgba(255,255,255,0.08)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(pad.l,zero); ctx.lineTo(pad.l+W,zero); ctx.stroke(); ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(pad.l,zero);
+  data.forEach((v,i)=>ctx.lineTo(pad.l+i*step, zero-(v/maxAbs)*(H/2)));
+  ctx.lineTo(pad.l+(data.length-1)*step,zero); ctx.closePath();
+  const g=ctx.createLinearGradient(0,pad.t,0,canvas.height);
+  g.addColorStop(0,'rgba(61,170,106,0.22)'); g.addColorStop(1,'rgba(61,170,106,0)');
+  ctx.fillStyle=g; ctx.fill();
+  ctx.beginPath();
+  data.forEach((v,i)=>{const x=pad.l+i*step,y=zero-(v/maxAbs)*(H/2); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.strokeStyle='#3DAA6A'; ctx.lineWidth=2; ctx.stroke();
+  data.forEach((v,i)=>{
+    const x=pad.l+i*step,y=zero-(v/maxAbs)*(H/2);
+    ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2);
+    ctx.fillStyle=v>=0?'#3DAA6A':'#E03535'; ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='8px DM Mono,monospace'; ctx.textAlign='center';
+    ctx.fillText('Q'+(i+1),x,canvas.height-5);
+  });
+}
+
+function drawRadar() {
+  const canvas = document.getElementById('radarChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const cx = W/2, cy = H/2, r = Math.min(W,H)/2 - 20;
+  const keys = Object.keys(G.competencies);
+  const vals = keys.map(k => G.competencies[k]/100);
+  const N = keys.length;
+  const angle = i => (Math.PI*2/N)*i - Math.PI/2;
+
+  // Grid
+  [0.25,0.5,0.75,1].forEach(sc => {
+    ctx.beginPath();
+    keys.forEach((_,i) => { const a=angle(i); const px=cx+Math.cos(a)*r*sc, py=cy+Math.sin(a)*r*sc; i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
+    ctx.closePath(); ctx.strokeStyle='rgba(255,255,255,0.08)'; ctx.lineWidth=1; ctx.stroke();
+  });
+
+  // Spokes
+  keys.forEach((_,i) => {
+    const a = angle(i);
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);
+    ctx.strokeStyle='rgba(255,255,255,0.08)'; ctx.lineWidth=1; ctx.stroke();
+  });
+
+  // Data
+  ctx.beginPath();
+  vals.forEach((v,i) => { const a=angle(i), px=cx+Math.cos(a)*r*v, py=cy+Math.sin(a)*r*v; i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
+  ctx.closePath();
+  ctx.fillStyle='rgba(232,149,42,0.2)'; ctx.fill();
+  ctx.strokeStyle='var(--ochre)'; ctx.lineWidth=2; ctx.stroke();
+
+  // Labels
+  ctx.fillStyle='rgba(255,255,255,0.55)'; ctx.font='8px DM Mono,monospace'; ctx.textAlign='center';
+  keys.forEach((k,i) => {
+    const a=angle(i), lx=cx+Math.cos(a)*(r+14), ly=cy+Math.sin(a)*(r+14);
+    ctx.fillText(k.split(' ')[0], lx, ly+3);
+  });
+}
+
+// ══════════════════════════════════════════
+//  MODAL
+// ══════════════════════════════════════════
+function showModal({ icon, title, sub, stats, score, hrNote, showJournal, btnText, action }) {
+  _modalAction = action;
+  document.getElementById('mIcon').textContent = icon;
+  document.getElementById('mTitle').textContent = title;
+  document.getElementById('mSub').textContent = sub;
+  document.getElementById('mStats').innerHTML = stats.map(s=>`<div class="mstat"><div class="mstat-label">${s.label}</div><div class="mstat-val">${s.val}</div></div>`).join('');
+  const sc = document.getElementById('mScore');
+  if (score) { sc.textContent = score; sc.style.display='inline-block'; } else sc.style.display='none';
+  document.getElementById('mHRNote').innerHTML = hrNote;
+  const jEl = document.getElementById('mJournal');
+  if (showJournal && G.journalEntries.length > 0) {
+    jEl.style.display='block';
+    jEl.innerHTML = `<h4>📝 Candidate Decision Journal</h4>` + G.journalEntries.map(j=>`<div class="journal-entry"><div class="journal-entry-q">Q${j.q} · ${j.branch} (${j.pricing} pricing, ${j.welfare} welfare)</div>${j.text}</div>`).join('');
+  } else jEl.style.display='none';
+  document.getElementById('mBtn').textContent = btnText;
+  document.getElementById('overlay').classList.add('show');
+}
+function modalAction() { document.getElementById('overlay').classList.remove('show'); if (_modalAction) _modalAction(); }
+
+// ══════════════════════════════════════════
+//  NOTIFICATIONS
+// ══════════════════════════════════════════
+function showNotif(msg, type='') {
+  const stack = document.getElementById('notifStack');
+  const el = document.createElement('div');
+  el.className = 'notif ' + type; el.innerHTML = msg;
+  stack.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity 0.4s'; setTimeout(()=>el.remove(),400); }, 3800);
+}
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+function rangeUpdate(id, dId, prefix) { const el=document.getElementById(id),d=document.getElementById(dId); if(el&&d) d.textContent=prefix+Number(el.value).toLocaleString(); }
+function fmtKES(v) { return 'KES ' + Math.abs(Math.round(v)).toLocaleString(); }
+function branchStatusClass(b) { if(!b.quartersDone) return 'bs-warn'; const r=b.quartersProfit/b.quartersDone; return r>=0.6?'bs-good':r>=0.3?'bs-warn':'bs-bad'; }
+function branchStatusText(b) { if(!b.quartersDone) return '● New'; const r=b.quartersProfit/b.quartersDone; return r>=0.6?'● Thriving':r>=0.3?'● Struggling':'● Failing'; }
+function branchStatusBadge(b) { return `<span class="branch-status ${branchStatusClass(b)}">${branchStatusText(b)}</span>`; }
+
+function resetAll() {
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('phaseBanner').style.display='none';
+  document.getElementById('onboarding').style.display='flex';
+  document.getElementById('simApp').style.display='none';
+  document.getElementById('obName').value='';
+  document.getElementById('obRole').value='';
+  G = null;
+}
+
+window.addEventListener('resize', ()=>{ drawChart(); drawRadar(); });
+</script>
+</body>
+</html>
